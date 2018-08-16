@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using GraphQL;
+using GraphQL.Http;
+using GraphQL.Types;
+using GraphQLServer.Models;
+using GraphQLServer.Data;
 
 namespace GraphQLServer
 {
@@ -24,6 +23,15 @@ namespace GraphQLServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            services.AddSingleton<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
+            services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
+            services.AddSingleton<IDocumentWriter, DocumentWriter>();
+            services.AddSingleton<ISchema, OrgSchema>();
+            services.AddSingleton<OrgData>();
+            services.AddSingleton<Queries>();
+            services.AddSingleton<Mutations>();
+            services.AddSingleton<ADUserType>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
