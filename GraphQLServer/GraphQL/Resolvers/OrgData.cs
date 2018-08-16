@@ -10,7 +10,7 @@ namespace GraphQLServer.Data
 
         public OrgData()
         {
-            ds = new DirectorySearcher("LDAP://DC=AHU,DC=ON,DC=CA");
+            ds = new DirectorySearcher("LDAP://DC=NASA105,DC=COM");
         }
 
         public DirectoryEntry GetUser(string userName)
