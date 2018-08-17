@@ -1,7 +1,7 @@
 ﻿using GraphQL;
 using GraphQL.Types;
 
-namespace GraphQLServer
+namespace Plasma
 {
     public class OrgSchema : Schema
     {

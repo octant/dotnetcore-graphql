@@ -1,8 +1,8 @@
 ﻿using GraphQL.Types;
 using System.DirectoryServices;
-using GraphQLServer.Data;
+using Plasma.Data;
 
-namespace GraphQLServer.Models
+namespace Plasma.Types
 {
     public class ADUserType : ObjectGraphType<DirectoryEntry>
     {

@@ -11,7 +11,7 @@ using GraphQL.Instrumentation;
 using GraphQL.Types;
 using GraphQL.Validation.Complexity;
 
-namespace GraphQLServer.Controllers
+namespace Plasma.Controllers
 {
     [Authorize]
     [Produces("application/json")]

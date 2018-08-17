@@ -1,16 +1,20 @@
-﻿using Microsoft.Extensions.Options;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.DirectoryServices;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
+using Plasma.Settings;
 
-namespace GraphQLServer.Data
+namespace Plasma.Data
 {
     public class OrgData
     {
         private readonly DirectorySearcher ds;
+        private readonly MongoContext _mongoContext;
 
-        public OrgData()
+        public OrgData(IOptions<MongoSettings> settings, IConfiguration configuration)
         {
-            ds = new DirectorySearcher("LDAP://DC=NASA105,DC=COM");
+            ds = new DirectorySearcher(configuration.GetSection("Org:ldap").Value);
+            _mongoContext = new MongoContext(settings);
         }
 
         public DirectoryEntry GetUser(string userName)

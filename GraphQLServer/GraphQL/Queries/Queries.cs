@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using GraphQL.Types;
-using GraphQLServer.Models;
-using GraphQLServer.Data;
+using Plasma.Types;
+using Plasma.Data;
 
-namespace GraphQLServer
+namespace Plasma
 {
     public class Queries : ObjectGraphType
     {

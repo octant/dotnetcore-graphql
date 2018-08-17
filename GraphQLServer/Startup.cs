@@ -5,10 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using GraphQL;
 using GraphQL.Http;
 using GraphQL.Types;
-using GraphQLServer.Models;
-using GraphQLServer.Data;
+using Plasma.Data;
+using Plasma.Types;
+using Plasma.Settings;
 
-namespace GraphQLServer
+namespace Plasma
 {
     public class Startup
     {
@@ -23,6 +24,13 @@ namespace GraphQLServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.Configure<MongoSettings>(settings =>
+            {
+                settings.ConnectionString
+                    = Configuration.GetSection("MongoConnection:ConnectionString").Value;
+                settings.Database
+                = Configuration.GetSection("MongoConnection:Database").Value;
+            });
 
             services.AddSingleton<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
             services.AddSingleton<IDocumentExecuter, DocumentExecuter>();

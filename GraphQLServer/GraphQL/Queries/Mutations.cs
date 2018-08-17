@@ -1,6 +1,6 @@
 ﻿using GraphQL.Types;
 
-namespace GraphQLServer
+namespace Plasma
 {
     internal class Mutations : ObjectGraphType
     {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GraphQLServer.Controllers
+namespace Plasma.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]
