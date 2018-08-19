@@ -3,6 +3,10 @@ using System.DirectoryServices;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Plasma.Settings;
+using Plasma.Types;
+using System.Threading.Tasks;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace Plasma.Data
 {
@@ -34,6 +38,29 @@ namespace Plasma.Data
             }
 
             return employees;
+        }
+ 
+        public async Task<IEnumerable<Message>> GetMessages(string username)
+        {
+            var filter = Builders<Message>.Filter;
+            var query = filter.Eq(m => m.To, username) | filter.Eq(m => m.From, username);
+            return await _mongoContext.Messages.Find(query).ToListAsync();
+        }
+
+        public async Task<Message> MarkMessageAsRead(string id, string to)
+        {
+            var filter = Builders<Message>.Filter;
+            var query = filter.Eq(n => n.Id, new ObjectId(id)) & filter.Eq(n => n.To, to);
+            var update = Builders<Message>.Update.Set(n => n.Read, true);
+            await _mongoContext.Messages.UpdateOneAsync(query, update);
+            return await _mongoContext.Messages.Find(query).FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<Message>> GetMessages(string username, string type)
+        {
+            var filter = Builders<Message>.Filter;
+            var query = (filter.Eq(m => m.To, username) | filter.Eq(m => m.From, username) & filter.Eq(n => n.Type, type));
+            return await _mongoContext.Messages.Find(query).ToListAsync();
         }
     }
 }

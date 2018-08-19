@@ -40,6 +40,8 @@ namespace Plasma
             services.AddSingleton<Queries>();
             services.AddSingleton<Mutations>();
             services.AddSingleton<ADUserType>();
+            services.AddSingleton<PublicUserDataType>();
+            services.AddSingleton<MessageType>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
