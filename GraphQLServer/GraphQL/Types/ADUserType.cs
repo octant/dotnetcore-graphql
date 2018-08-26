@@ -13,7 +13,7 @@ namespace Plasma.Types
             Field<StringGraphType>("DistinguishedName", resolve: context => context.Source.Properties["DistinguishedName"].Value);
             Field<StringGraphType>("DisplayName", resolve: context => context.Source.Properties["DisplayName"].Value);
             Field<StringGraphType>("Mail", resolve: context => context.Source.Properties["Mail"].Value);
-            Field<ListGraphType<StringGraphType>>("MemberOf", resolve: context => context.Source.Properties["MemberOf"].Value);
+            Field<ListGraphType<ADGroupType>>("MemberOf", resolve: context => data.GetGroupNames((object[])context.Source.Properties["MemberOf"].Value));
             Field<ListGraphType<MessageType>>("Messages", resolve: context => data.GetMessages(context.Source.Properties["sAMAccountName"].Value.ToString(), "pm"));
             Field<ListGraphType<PublicUserDataType>>("Employees", resolve: context => data.GetEmployees(context.Source.Properties["DistinguishedName"].Value.ToString()));
         }

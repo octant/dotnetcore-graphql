@@ -7,6 +7,7 @@ using Plasma.Types;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using System.Text.RegularExpressions;
 
 namespace Plasma.Data
 {
@@ -61,6 +62,28 @@ namespace Plasma.Data
             var filter = Builders<Message>.Filter;
             var query = (filter.Eq(m => m.To, username) | filter.Eq(m => m.From, username) & filter.Eq(n => n.Type, type));
             return await _mongoContext.Messages.Find(query).ToListAsync();
+        }
+
+        public List<ADGroup> GetGroupNames(object[] groupDNs)
+        {
+            List<ADGroup> groups = new List<ADGroup>();
+
+            foreach (string dn in groupDNs)
+            {
+                ADGroup group = new ADGroup();
+                Match match = Regex.Match(dn, @"^CN=(.*?),");
+
+                if(match.Success)
+                {
+                    group.DistinguishedName = dn;
+                    group.Name = match.Groups[1].Value;
+                }
+                
+
+                groups.Add(group);
+            }
+
+            return groups;
         }
     }
 }
