@@ -41,6 +41,7 @@ namespace Plasma
             services.AddSingleton<Mutations>();
             services.AddSingleton<ADUserType>();
             services.AddSingleton<ADGroupType>();
+            services.AddSingleton<ADUserInputType>();
             services.AddSingleton<PublicUserDataType>();
             services.AddSingleton<MessageType>();
         }

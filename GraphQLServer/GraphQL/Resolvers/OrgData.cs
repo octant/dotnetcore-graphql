@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using System.Text.RegularExpressions;
+using System.Security.Principal;
 
 namespace Plasma.Data
 {
@@ -28,9 +29,9 @@ namespace Plasma.Data
             return ds.FindOne().GetDirectoryEntry();
         }
 
-        public List<DirectoryEntry> GetEmployees(string distinguishedName)
+        public List<DirectoryEntry> GetEmployees(object distinguishedName)
         {
-            ds.Filter = $"(Manager={distinguishedName})";
+            ds.Filter = $"(&(Manager={distinguishedName})(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
             List<DirectoryEntry> employees = new List<DirectoryEntry>();
 
             foreach (SearchResult result in ds.FindAll())
@@ -40,7 +41,18 @@ namespace Plasma.Data
 
             return employees;
         }
- 
+
+        public DirectoryEntry GetManager(object distinguishedName)
+        {
+            if (distinguishedName == null)
+            {
+                return new DirectoryEntry();
+            }
+
+            ds.Filter = $"(DistinguishedName={distinguishedName})";
+            return ds.FindOne().GetDirectoryEntry();
+        }
+  
         public async Task<IEnumerable<Message>> GetMessages(string username)
         {
             var filter = Builders<Message>.Filter;
@@ -84,6 +96,25 @@ namespace Plasma.Data
             }
 
             return groups;
+        }
+
+        public DirectoryEntry UpdateADUser(WindowsIdentity identity, string userName, Dictionary<string, dynamic> update)
+        {
+
+            ds.Filter = $"(sAMAccountName={userName})";
+            DirectoryEntry user = ds.FindOne().GetDirectoryEntry();
+
+            WindowsIdentity.RunImpersonated(identity.AccessToken, () =>
+            {
+                foreach (KeyValuePair<string, dynamic> field in update)
+                {
+                    user.Properties[field.Key].Value = field.Value;
+                }
+
+                user.CommitChanges();
+            });
+            
+            return user;
         }
     }
 }
