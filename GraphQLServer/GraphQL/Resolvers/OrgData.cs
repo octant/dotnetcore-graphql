@@ -20,6 +20,23 @@ namespace Plasma.Data
         public OrgData(IOptions<MongoSettings> settings, IConfiguration configuration)
         {
             ds = new DirectorySearcher(configuration.GetSection("Org:ldap").Value);
+            string[] userProperties = new string[] {
+                "sAMAccountName",
+                "GivenName",
+                "SN",
+                "DisplayName",
+                "Department",
+                "Mail",
+                "Title",
+                "telephoneNumber",
+                "DistinguishedName",
+                "physicalDeliveryOfficeName",
+                "MemberOf",
+                "Manager",
+                "Employees"
+            };
+            ds.PropertiesToLoad.AddRange(userProperties);
+
             _mongoContext = new MongoContext(settings);
         }
 
@@ -38,12 +55,6 @@ namespace Plasma.Data
         public List<ADUser> GetEmployees(object distinguishedName)
         {
             ds.Filter = $"(&(Manager={distinguishedName})(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
-            ds.PropertiesToLoad.Add("sAMAccountName");
-            ds.PropertiesToLoad.Add("Mail");
-            ds.PropertiesToLoad.Add("GivenName");
-            ds.PropertiesToLoad.Add("SN");
-            ds.PropertiesToLoad.Add("DisplayName");
-            ds.PropertiesToLoad.Add("Department");
             List<ADUser> employees = new List<ADUser>();
 
             foreach (SearchResult result in ds.FindAll())
@@ -129,12 +140,6 @@ namespace Plasma.Data
 
             ds.Filter = $"(&(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(objectCategory=computer))(|(EmployeeID=*)(MemberOf={groupDNs["IT_Department"]})))";
             ds.Sort.Direction = System.DirectoryServices.SortDirection.Ascending;
-            ds.PropertiesToLoad.Add("sAMAccountName");
-            ds.PropertiesToLoad.Add("Mail");
-            ds.PropertiesToLoad.Add("GivenName");
-            ds.PropertiesToLoad.Add("SN");
-            ds.PropertiesToLoad.Add("DisplayName");
-            ds.PropertiesToLoad.Add("Department");
 
             ds.Sort.PropertyName = "DisplayName";
             List<ADUser> Users = new List<ADUser>();
