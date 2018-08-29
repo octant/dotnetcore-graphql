@@ -7,18 +7,21 @@ namespace Plasma
 {
     public class Queries : ObjectGraphType
     {
-        public Queries(OrgData data, IHttpContextAccessor _context)
+        public Queries(OrgData data, IHttpContextAccessor accessor)
         {
             Name = "Query";
 
-            Field<ADUserType>("my", resolve: context => data.GetUser(_context.HttpContext.User.Identity.Name.Split("\\")[1]));
+            Field<ADUserType>("my", resolve: context => data.GetDirectoryEntry(accessor.HttpContext.User.Identity.Name.Split("\\")[1]));
+
+            Field<ListGraphType<PublicUserDataType>>("users", resolve: context => data.GetAPHUsers());
 
             Field<PublicUserDataType>(
                 "user",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "username", Description = "sAMAccountName of the user" }
                 ),
-                resolve: context => data.GetUser(context.GetArgument<string>("username")));
+                resolve: context => data.GetUser(context.GetArgument<string>("username"))
+            );
 
             Field<ListGraphType<MessageType>>(
                 "messages",
@@ -27,7 +30,8 @@ namespace Plasma
                         Name = "type", Description = "message type"
                     }
                 ),
-                resolve: context => data.GetMessages(_context.HttpContext.User.Identity.Name.Split("\\")[1], context.GetArgument<string>("type")));
+                resolve: context => data.GetMessages(accessor.HttpContext.User.Identity.Name.Split("\\")[1], context.GetArgument<string>("type"))
+            );
         }
     }
 }
