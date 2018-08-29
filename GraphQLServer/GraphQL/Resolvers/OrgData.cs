@@ -23,48 +23,53 @@ namespace Plasma.Data
             _mongoContext = new MongoContext(settings);
         }
 
-        public DirectoryEntry GetUser(string userName)
+        public DirectoryEntry GetDirectoryEntry(string userName)
         {
             ds.Filter = $"(sAMAccountName={userName})";
             return ds.FindOne().GetDirectoryEntry();
         }
 
-        public List<DirectoryEntry> GetEmployees(object distinguishedName)
+        public ADUser GetUser(string userName)
+        {
+            ds.Filter = $"(sAMAccountName={userName})";
+            return new ADUser(ds.FindOne().GetDirectoryEntry());
+        }
+
+        public List<ADUser> GetEmployees(object distinguishedName)
         {
             ds.Filter = $"(&(Manager={distinguishedName})(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
-            List<DirectoryEntry> employees = new List<DirectoryEntry>();
+            ds.PropertiesToLoad.Add("sAMAccountName");
+            ds.PropertiesToLoad.Add("Mail");
+            ds.PropertiesToLoad.Add("GivenName");
+            ds.PropertiesToLoad.Add("SN");
+            ds.PropertiesToLoad.Add("DisplayName");
+            ds.PropertiesToLoad.Add("Department");
+            List<ADUser> employees = new List<ADUser>();
 
             foreach (SearchResult result in ds.FindAll())
             {
-                employees.Add(result.GetDirectoryEntry());
+                employees.Add(new ADUser(result));
             }
 
             return employees;
         }
 
-        public DirectoryEntry GetManager(object distinguishedName)
+        public ADUser GetManager(object distinguishedName)
         {
             if (distinguishedName == null)
             {
-                return new DirectoryEntry();
+                return new ADUser();
             }
 
             ds.Filter = $"(DistinguishedName={distinguishedName})";
-            return ds.FindOne().GetDirectoryEntry();
-        }
-  
-        public async Task<IEnumerable<Message>> GetMessages(string username)
-        {
-            var filter = Builders<Message>.Filter;
-            var query = filter.Eq(m => m.To, username) | filter.Eq(m => m.From, username);
-            return await _mongoContext.Messages.Find(query).ToListAsync();
+            return new ADUser(ds.FindOne().GetDirectoryEntry());
         }
 
-        public async Task<Message> MarkMessageAsRead(string id, string to)
+        public async Task<Message> MarkMessageAsRead(string id)
         {
             var filter = Builders<Message>.Filter;
-            var query = filter.Eq(n => n.Id, new ObjectId(id)) & filter.Eq(n => n.To, to);
-            var update = Builders<Message>.Update.Set(n => n.Read, true);
+            var query = filter.Eq(m => m.Id, new ObjectId(id));
+            var update = Builders<Message>.Update.Set(m => m.Read, true);
             await _mongoContext.Messages.UpdateOneAsync(query, update);
             return await _mongoContext.Messages.Find(query).FirstOrDefaultAsync();
         }
@@ -72,7 +77,7 @@ namespace Plasma.Data
         public async Task<IEnumerable<Message>> GetMessages(string username, string type)
         {
             var filter = Builders<Message>.Filter;
-            var query = (filter.Eq(m => m.To, username) | filter.Eq(m => m.From, username) & filter.Eq(n => n.Type, type));
+            var query = filter.Eq(m => m.Type, type);
             return await _mongoContext.Messages.Find(query).ToListAsync();
         }
 
@@ -115,6 +120,31 @@ namespace Plasma.Data
             });
             
             return user;
+        }
+
+        public List<ADUser> GetAPHUsers()
+        {
+            Dictionary<string, string> groupDNs = new Dictionary<string, string>();
+            groupDNs.Add("IT_Department", "CN=IT,OU=Secure Groups,OU=Willow Ave,DC=ahu,DC=on,DC=ca");
+
+            ds.Filter = $"(&(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(objectCategory=computer))(|(EmployeeID=*)(MemberOf={groupDNs["IT_Department"]})))";
+            ds.Sort.Direction = System.DirectoryServices.SortDirection.Ascending;
+            ds.PropertiesToLoad.Add("sAMAccountName");
+            ds.PropertiesToLoad.Add("Mail");
+            ds.PropertiesToLoad.Add("GivenName");
+            ds.PropertiesToLoad.Add("SN");
+            ds.PropertiesToLoad.Add("DisplayName");
+            ds.PropertiesToLoad.Add("Department");
+
+            ds.Sort.PropertyName = "DisplayName";
+            List<ADUser> Users = new List<ADUser>();
+
+            foreach (SearchResult s in ds.FindAll())
+            {
+                Users.Add(new ADUser(s));
+            };
+
+            return Users;
         }
     }
 }
