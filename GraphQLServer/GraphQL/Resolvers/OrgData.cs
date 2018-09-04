@@ -124,7 +124,7 @@ namespace Plasma.Data
             {
                 foreach (KeyValuePair<string, dynamic> field in update)
                 {
-                    user.Properties[field.Key].Value = field.Value;
+                    user.Properties[field.Key].Value = field.Value == "" ? null : field.Value;
                 }
 
                 user.CommitChanges();
@@ -136,7 +136,7 @@ namespace Plasma.Data
         public List<ADUser> GetAPHUsers()
         {
             Dictionary<string, string> groupDNs = new Dictionary<string, string>();
-            groupDNs.Add("IT_Department", "CN=IT,OU=Secure Groups,OU=Willow Ave,DC=ahu,DC=on,DC=ca");
+            groupDNs.Add("IT_Department", "CN=IT_Department,OU=Secure Groups,OU=Willow Ave,DC=ahu,DC=on,DC=ca");
 
             ds.Filter = $"(&(!(userAccountControl:1.2.840.113556.1.4.803:=2))(!(objectCategory=computer))(|(EmployeeID=*)(MemberOf={groupDNs["IT_Department"]})))";
             ds.Sort.Direction = System.DirectoryServices.SortDirection.Ascending;
