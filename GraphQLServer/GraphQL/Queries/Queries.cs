@@ -13,6 +13,14 @@ namespace Plasma
 
             Field<ADUserType>("my", resolve: context => data.GetDirectoryEntry(accessor.HttpContext.User.Identity.Name.Split("\\")[1]));
 
+            Field<ADUserType>(
+                "directoryEntry",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "username", Description = "sAMAccountName of the directory entry" }
+                ),
+                resolve: context => data.GetDirectoryEntry(context.GetArgument<string>("username"))
+            );
+
             Field<ListGraphType<PublicUserDataType>>("users", resolve: context => data.GetAPHUsers());
 
             Field<PublicUserDataType>(
