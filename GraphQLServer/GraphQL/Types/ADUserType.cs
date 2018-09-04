@@ -13,6 +13,7 @@ namespace Plasma.Types
             Field<StringGraphType>("GivenName", resolve: context => context.Source.Properties["GivenName"].Value);
             Field<StringGraphType>("SN", resolve: context => context.Source.Properties["SN"].Value);
             Field<StringGraphType>("DisplayName", resolve: context => context.Source.Properties["DisplayName"].Value);
+            Field<StringGraphType>("Description", resolve: context => context.Source.Properties["Description"].Value);
             Field<StringGraphType>("Department", resolve: context => context.Source.Properties["Department"].Value);
             Field<StringGraphType>("Mail", resolve: context => context.Source.Properties["Mail"].Value);
             Field<StringGraphType>("Title", resolve: context => context.Source.Properties["Title"].Value);
@@ -35,6 +36,7 @@ namespace Plasma.Types
             Field<StringGraphType>("SN");
             Field<StringGraphType>("DisplayName");
             Field<StringGraphType>("Department");
+            Field<StringGraphType>("Description");
             Field<StringGraphType>("telephoneNumber");
             Field<StringGraphType>("Title");
             Field<StringGraphType>("physicalDeliveryOfficeName");
