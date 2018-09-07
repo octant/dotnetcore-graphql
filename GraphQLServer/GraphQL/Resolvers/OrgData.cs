@@ -92,6 +92,20 @@ namespace Plasma.Data
             return await _mongoContext.Messages.Find(query).ToListAsync();
         }
 
+        public async Task<NewUser> CreateUser(NewUser newUser)
+        {
+            newUser.Id = ObjectId.GenerateNewId();
+            await _mongoContext.NewUsers.InsertOneAsync(newUser);
+            return await _mongoContext.NewUsers.Find(n => n.Id == newUser.Id).FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<NewUser>> GetNewUsers()
+        {
+            var filter = Builders<NewUser>.Filter;
+            var query = filter.Eq(u => u.Created, false);
+            return await _mongoContext.NewUsers.Find(query).ToListAsync();
+        }
+  
         public List<ADGroup> GetGroupNames(object[] groupDNs)
         {
             List<ADGroup> groups = new List<ADGroup>();

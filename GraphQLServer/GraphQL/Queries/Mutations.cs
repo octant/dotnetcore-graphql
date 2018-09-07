@@ -24,6 +24,17 @@ namespace Plasma
                 }
             );
 
+            Field<NewUserType>(
+                "createUser",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<NewUserInputType>> { Name = "user", Description = "updated user fields" }
+                ),
+                resolve: context =>
+                {
+                    return data.CreateUser(context.GetArgument<NewUser>("user"));
+                }
+            );
+
             Field<ADUserType>(
                 "updateADUser",
                 arguments: new QueryArguments(

@@ -44,6 +44,8 @@ namespace Plasma
             services.AddSingleton<ADUserInputType>();
             services.AddSingleton<PublicUserDataType>();
             services.AddSingleton<MessageType>();
+            services.AddSingleton<NewUserType>();
+            services.AddSingleton<NewUserInputType>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

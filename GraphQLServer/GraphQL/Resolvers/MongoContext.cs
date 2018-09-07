@@ -37,5 +37,22 @@ namespace Plasma.Data
                 _database.CreateCollection("messages", options);
             }
         }
+
+        public IMongoCollection<NewUser> NewUsers
+        {
+            get
+            {
+                return _database.GetCollection<NewUser>("newUsers");
+            }
+            set
+            {
+                CreateCollectionOptions options = new CreateCollectionOptions<NewUser>()
+                {
+                    ValidationAction = DocumentValidationAction.Error,
+                    ValidationLevel = DocumentValidationLevel.Strict
+                };
+                _database.CreateCollection("newUsers", options);
+            }
+        }
     }
 }

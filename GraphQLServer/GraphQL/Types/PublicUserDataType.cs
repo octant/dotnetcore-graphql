@@ -13,6 +13,8 @@ namespace Plasma.Types
         public string SN { get; set; }
         public string DisplayName { get; set; }
         public string Department { get; set; }
+        public string TelephoneNumber { get; set; }
+        public string PhysicalDeliveryOfficeName { get; set; }
 
         public ADUser()
         {
@@ -27,6 +29,8 @@ namespace Plasma.Types
             SN = user.Properties["SN"].Value.ToString();
             DisplayName = user.Properties["DisplayName"].Value.ToString();
             Department = user.Properties["Department"].Value.ToString();
+            TelephoneNumber = user.Properties["telephoneNumber"].Value.ToString();
+            PhysicalDeliveryOfficeName = user.Properties["physicalDeliveryOfficeName"].Value.ToString();
         }
 
         public ADUser(SearchResult user)
@@ -37,6 +41,8 @@ namespace Plasma.Types
             IEnumerator SNEnum = user.Properties["SN"].GetEnumerator();
             IEnumerator DisplayNameEnum = user.Properties["DisplayName"].GetEnumerator();
             IEnumerator DepartmentEnum = user.Properties["Department"].GetEnumerator();
+            IEnumerator TelephoneNumberEnum = user.Properties["telephoneNumber"].GetEnumerator();
+            IEnumerator PhysicalDeliveryOfficeNameEnum = user.Properties["physicalDeliveryOfficeName"].GetEnumerator();
 
             if (SAMAccountNameEnum.MoveNext())
                 SAMAccountName = SAMAccountNameEnum.Current.ToString();
@@ -50,6 +56,10 @@ namespace Plasma.Types
                 DisplayName = DisplayNameEnum.Current.ToString();
             if (DepartmentEnum.MoveNext())
                 Department = DepartmentEnum.Current.ToString();
+            if (TelephoneNumberEnum.MoveNext())
+                TelephoneNumber = TelephoneNumberEnum.Current.ToString();
+            if (PhysicalDeliveryOfficeNameEnum.MoveNext())
+                PhysicalDeliveryOfficeName = PhysicalDeliveryOfficeNameEnum.Current.ToString();
         }
     }
 
@@ -64,6 +74,8 @@ namespace Plasma.Types
             Field<StringGraphType>("SN", resolve: context => context.Source.SN);
             Field<StringGraphType>("DisplayName", resolve: context => context.Source.DisplayName);
             Field<StringGraphType>("Department", resolve: context => context.Source.Department);
+            Field<StringGraphType>("telephoneNumber", resolve: context => context.Source.TelephoneNumber);
+            Field<StringGraphType>("physicalDeliveryOfficeName", resolve: context => context.Source.PhysicalDeliveryOfficeName);
         }
     }
 }
