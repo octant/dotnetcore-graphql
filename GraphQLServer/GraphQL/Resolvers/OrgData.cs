@@ -92,6 +92,39 @@ namespace Plasma.Data
             return await _mongoContext.Messages.Find(query).ToListAsync();
         }
 
+        public async Task<IEnumerable<Question>> GetQuestions()
+        {
+            return await _mongoContext.Questions.Find(_ => true).ToListAsync();
+        }
+
+        public async Task<Question> AddQuestion(Question question)
+        {
+            question.Id = ObjectId.GenerateNewId();
+            foreach (Alternative alternative in question.Alternatives)
+            {
+                alternative.Id = ObjectId.GenerateNewId();
+            }
+            await _mongoContext.Questions.InsertOneAsync(question);
+            return await _mongoContext.Questions.Find(n => n.Id == question.Id).FirstOrDefaultAsync();
+        }
+
+        public async Task<List<QuestionAnalysis>> AnalyzeQuestion(string questionId)
+        {
+            var result = await _mongoContext.Questions.Aggregate()
+                .Match(q => q.Id == new ObjectId(questionId))
+                .Unwind(q => q.Alternatives)
+                .Unwind(q => q["Alternatives.Respondents"])
+                .Group(new BsonDocument { { "_id", "$Alternatives.Value" }, { "count", new BsonDocument("$sum", 1) } })
+                .Sort(new BsonDocument("_id", 1))
+                .ToListAsync();
+            List<QuestionAnalysis> analysis = new List<QuestionAnalysis>();
+            foreach (BsonDocument a in result)
+            {
+                analysis.Add(new QuestionAnalysis(a));
+            }
+            return analysis;
+        }
+
         public async Task<NewUser> CreateUser(NewUser newUser)
         {
             newUser.Id = ObjectId.GenerateNewId();

@@ -35,6 +35,17 @@ namespace Plasma
                 }
             );
 
+            Field<QuestionType>(
+                "addQuestion",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<QuestionInputType>> { Name = "question", Description = "question fields" }
+                ),
+                resolve: context =>
+                {
+                    return data.AddQuestion(context.GetArgument<Question>("question"));
+                }
+            );
+
             Field<ADUserType>(
                 "updateADUser",
                 arguments: new QueryArguments(

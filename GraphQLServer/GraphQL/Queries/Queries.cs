@@ -41,6 +41,23 @@ namespace Plasma
                 resolve: context => data.GetMessages(accessor.HttpContext.User.Identity.Name.Split("\\")[1], context.GetArgument<string>("type"))
             );
 
+            Field<ListGraphType<QuestionAnalysisType>>(
+                "questionAnalysis",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>>
+                    {
+                        Name = "questionId",
+                        Description = "question id"
+                    }
+                ),
+                resolve: context => data.AnalyzeQuestion(context.GetArgument<string>("questionId"))
+            );
+
+            Field<ListGraphType<QuestionType>>(
+                "questions",
+                resolve: context => data.GetQuestions()
+            );
+
             Field<ListGraphType<NewUserType>>(
                 "newUsers",
                 resolve: context => data.GetNewUsers()
