@@ -42,7 +42,7 @@ namespace Plasma
             );
 
             Field<ListGraphType<QuestionAnalysisType>>(
-                "questionAnalysis",
+                "analyzeQuestion",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<StringGraphType>>
                     {

@@ -115,16 +115,16 @@ namespace Plasma.Types
         {
 
         }
-        public QuestionAnalysis(BsonDocument a)
+        public QuestionAnalysis(BsonDocument aggregation)
         {
-            IEnumerator vEnum = a.Values.GetEnumerator();
-            if (vEnum.MoveNext())
+            IEnumerator aggregationEnum = aggregation.Values.GetEnumerator();
+            if (aggregationEnum.MoveNext())
             {
-                Id = vEnum.Current.ToString(); 
+                Id = aggregationEnum.Current.ToString(); 
             }
-            if (vEnum.MoveNext())
+            if (aggregationEnum.MoveNext())
             {
-                Count = int.Parse(vEnum.Current.ToString());
+                Count = int.Parse(aggregationEnum.Current.ToString());
             }
 
         }
