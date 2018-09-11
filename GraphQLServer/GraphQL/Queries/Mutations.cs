@@ -46,6 +46,18 @@ namespace Plasma
                 }
             );
 
+            Field<QuestionType>(
+                "answerQuestion",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "id", Description = "question id" },
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "username", Description = "username" }
+                ),
+                resolve: context =>
+                {
+                    return data.AnswerQuestion(context.GetArgument<string>("id"), context.GetArgument<string>("username"));
+                }
+            );
+
             Field<ADUserType>(
                 "updateADUser",
                 arguments: new QueryArguments(

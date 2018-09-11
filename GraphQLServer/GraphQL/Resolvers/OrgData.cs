@@ -108,6 +108,26 @@ namespace Plasma.Data
             return await _mongoContext.Questions.Find(n => n.Id == question.Id).FirstOrDefaultAsync();
         }
 
+        public async Task<Question> AnswerQuestion(string id, string username)
+        {
+            var filter = Builders<Question>.Filter;
+            var query = filter.ElemMatch(q => q.Alternatives, a => a.Id == new ObjectId(id));
+            Question question = await _mongoContext.Questions.Find(query).FirstOrDefaultAsync();
+            if (question.Alternatives.Find(a => a.Id == new ObjectId(id)).Respondents == null)
+            {
+                question.Alternatives.Find(a => a.Id == new ObjectId(id)).Respondents = new List<string>();
+            }
+            if (question.Alternatives.Find(a => a.Id == new ObjectId(id)).Respondents.Contains(username))
+            {
+                return question;
+            }
+            question.Alternatives.Find(a => a.Id == new ObjectId(id)).Respondents.Add(username);
+            var update = Builders<Question>.Update.Set("Alternatives.$.Respondents", question.Alternatives.Find(a => a.Id == new ObjectId(id)).Respondents);
+            await _mongoContext.Questions.UpdateOneAsync(query, update);
+
+            return question;
+        }
+
         public async Task<List<QuestionAnalysis>> AnalyzeQuestion(string questionId)
         {
             var result = await _mongoContext.Questions.Aggregate()
