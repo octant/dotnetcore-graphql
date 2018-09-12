@@ -16,6 +16,7 @@ namespace Plasma.Types
             Field<IdGraphType>("Id", resolve: context => context.Source.Id.ToString());
             Field<StringGraphType>("Type", resolve: context => context.Source.Type.ToString());
             Field<StringGraphType>("Stem", resolve: context => context.Source.Stem.ToString());
+            Field<StringGraphType>("Topic", resolve: context => context.Source.Topic.ToString());
             Field<ListGraphType<AlternativeType>>("Alternatives", resolve: context => context.Source.Alternatives);
         }
     }
@@ -27,6 +28,7 @@ namespace Plasma.Types
             Name = "QuestionInput";
             Field<StringGraphType>("Type");
             Field<StringGraphType>("Stem");
+            Field<StringGraphType>("Topic");
             Field<ListGraphType<AlternativeInputType>>("Alternatives");
         }
     }
@@ -79,6 +81,9 @@ namespace Plasma.Types
 
         [BsonElement]
         public string Stem { get; set; }
+
+        [BsonElement]
+        public string Topic { get; set; }
 
         [BsonElement]
         public List<Alternative> Alternatives { get; set; }
