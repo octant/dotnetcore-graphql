@@ -97,6 +97,13 @@ namespace Plasma.Data
             return await _mongoContext.Questions.Find(_ => true).ToListAsync();
         }
 
+        public async Task<Question> GetQuestion(string id)
+        {
+            var filter = Builders<Question>.Filter;
+            var query = filter.Eq(q => q.Id, new ObjectId(id));
+            return await _mongoContext.Questions.Find(query).FirstOrDefaultAsync();
+        }
+
         public async Task<Question> AddQuestion(Question question)
         {
             question.Id = ObjectId.GenerateNewId();
