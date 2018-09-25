@@ -39,7 +39,6 @@ namespace Plasma.Types
         {
             Name = "Alternative";
             Field<IdGraphType>("Id", resolve: context => context.Source.Id.ToString());
-            Field<StringGraphType>("InputType", resolve: context => context.Source.InputType.ToString());
             Field<StringGraphType>("Value", resolve: context => context.Source.Value.ToString());
             Field<StringGraphType>("Text", resolve: context => context.Source.Text.ToString());
             Field<StringGraphType>("Type", resolve: context => context.Source.Type.ToString());
@@ -53,7 +52,7 @@ namespace Plasma.Types
         public AlternativeInputType()
         {
             Name = "AlternativeInput";
-            Field<StringGraphType>("InputType");
+            Field<IdGraphType>("Id");
             Field<StringGraphType>("Value");
             Field<StringGraphType>("Text");
             Field<StringGraphType>("Type");
@@ -76,16 +75,16 @@ namespace Plasma.Types
         [BsonId]
         public ObjectId Id { get; set; }
 
-        [BsonElement]
+        [BsonElement("type")]
         public string Type { get; set; }
 
-        [BsonElement]
+        [BsonElement("stem")]
         public string Stem { get; set; }
 
-        [BsonElement]
+        [BsonElement("topic")]
         public string Topic { get; set; }
 
-        [BsonElement]
+        [BsonElement("alternatives")]
         public List<Alternative> Alternatives { get; set; }
     }
 
@@ -94,19 +93,16 @@ namespace Plasma.Types
         [BsonId]
         public ObjectId Id { get; set; }
 
-        [BsonElement]
-        public string InputType { get; set; }
-
-        [BsonElement]
+        [BsonElement("value")]
         public string Value { get; set; }
 
-        [BsonElement]
+        [BsonElement("text")]
         public string Text { get; set; }
 
-        [BsonElement]
+        [BsonElement("type")]
         public string Type { get; set; }
 
-        [BsonElement]
+        [BsonElement("respondents")]
         public List<string> Respondents { get; set; }
     }
 

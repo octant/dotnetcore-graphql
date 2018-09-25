@@ -92,6 +92,20 @@ namespace Plasma.Data
             return await _mongoContext.Messages.Find(query).ToListAsync();
         }
 
+        /* Question Start */
+        /* Create */
+        public async Task<Question> AddQuestion(Question question)
+        {
+            question.Id = ObjectId.GenerateNewId();
+            foreach (Alternative alternative in question.Alternatives)
+            {
+                alternative.Id = ObjectId.GenerateNewId();
+            }
+            await _mongoContext.Questions.InsertOneAsync(question);
+            return await _mongoContext.Questions.Find(n => n.Id == question.Id).FirstOrDefaultAsync();
+        }
+
+        /* Review */
         public async Task<IEnumerable<Question>> GetQuestions()
         {
             return await _mongoContext.Questions.Find(_ => true).ToListAsync();
@@ -104,15 +118,24 @@ namespace Plasma.Data
             return await _mongoContext.Questions.Find(query).FirstOrDefaultAsync();
         }
 
-        public async Task<Question> AddQuestion(Question question)
+        /* Update */
+        public async Task<Question> UpdateQuestion(string id, Dictionary<string, dynamic> update)
         {
-            question.Id = ObjectId.GenerateNewId();
-            foreach (Alternative alternative in question.Alternatives)
+            var filter = Builders<Question>.Filter;
+            var query = filter.Eq(m => m.Id, new ObjectId(id));
+
+            var updateSet = new List<UpdateDefinition<Question>>();
+
+            foreach (KeyValuePair<string, dynamic> field in update)
             {
-                alternative.Id = ObjectId.GenerateNewId();
+                updateSet.Add(Builders<Question>.Update.Set(field.Key, field.Value));
             }
-            await _mongoContext.Questions.InsertOneAsync(question);
-            return await _mongoContext.Questions.Find(n => n.Id == question.Id).FirstOrDefaultAsync();
+
+            var mongoUpdate = Builders<Question>.Update.Combine(updateSet.ToArray());
+
+            await _mongoContext.Questions.UpdateOneAsync(query, mongoUpdate);
+
+            return await _mongoContext.Questions.Find(query).FirstOrDefaultAsync();
         }
 
         public async Task<Question> AnswerQuestion(string id, string username)
@@ -151,7 +174,9 @@ namespace Plasma.Data
             }
             return analysis;
         }
+        /* Question End */
 
+        /* User Start */
         public async Task<NewUser> CreateUser(NewUser newUser)
         {
             newUser.Id = ObjectId.GenerateNewId();
@@ -225,5 +250,7 @@ namespace Plasma.Data
 
             return Users;
         }
+
+        /* User End */
     }
 }
