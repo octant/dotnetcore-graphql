@@ -14,6 +14,9 @@ namespace Plasma
         {
             Name = "Mutation";
 
+            /* Messages */
+
+            /* Update */
             Field<MessageType>(
                 "markAsRead",
                 arguments: new QueryArguments(
@@ -25,6 +28,9 @@ namespace Plasma
                 }
             );
 
+            /* Users */
+
+            /* Update */
             Field<NewUserType>(
                 "createUser",
                 arguments: new QueryArguments(
@@ -36,6 +42,22 @@ namespace Plasma
                 }
             );
 
+            Field<ADUserType>(
+                "updateADUser",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "id", Description = "user id" },
+                    new QueryArgument<NonNullGraphType<ADUserInputType>> { Name = "user", Description = "updated user fields" }
+                    ),
+                resolve: context =>
+                {
+
+                    return data.UpdateADUser((WindowsIdentity)accessor.HttpContext.User.Identity, context.GetArgument<string>("id"), context.GetArgument<Dictionary<string, dynamic>>("user"));
+                }
+            );
+
+            /* Questions */
+
+            /* Create */
             Field<QuestionType>(
                 "addQuestion",
                 arguments: new QueryArguments(
@@ -47,6 +69,7 @@ namespace Plasma
                 }
             );
 
+            /* Update */
             Field<QuestionType>(
                 "updateQuestion",
                 arguments: new QueryArguments(
@@ -89,16 +112,30 @@ namespace Plasma
                 }
             );
 
-            Field<ADUserType>(
-                "updateADUser",
+            /* Sessions */
+
+            /* Create */
+            Field<SessionType>(
+                "createSession",
                 arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "id", Description = "user id" },
-                    new QueryArgument<NonNullGraphType<ADUserInputType>> { Name = "user", Description = "updated user fields" }
-                    ),
+                    new QueryArgument<NonNullGraphType<SessionInputType>> { Name = "session", Description = "session fields" }
+                ),
                 resolve: context =>
                 {
-                    
-                    return data.UpdateADUser((WindowsIdentity)accessor.HttpContext.User.Identity, context.GetArgument<string>("id"), context.GetArgument<Dictionary<string, dynamic>>("user"));
+                    return data.CreateSession(context.GetArgument<Session>("session"));
+                }
+            );
+
+            /* Update */
+            Field<SessionType>(
+                "addQuestionsToSession",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "id", Description = "session id" },
+                    new QueryArgument<ListGraphType<StringGraphType>> { Name = "questions", Description = "question ids" }
+                ),
+                resolve: context =>
+                {
+                    return data.AddQuestionsToSession(context.GetArgument<string>("id"), context.GetArgument<List<string>>("questions"));
                 }
             );
         }

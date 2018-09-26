@@ -93,6 +93,7 @@ namespace Plasma.Data
         }
 
         /* Question Start */
+
         /* Create */
         public async Task<Question> AddQuestion(Question question)
         {
@@ -175,6 +176,67 @@ namespace Plasma.Data
             return analysis;
         }
         /* Question End */
+
+        /* Session Start */
+
+        /* Create */
+        public async Task<Session> CreateSession(Session session)
+        {
+            session.Id = ObjectId.GenerateNewId();
+            
+            await _mongoContext.Sessions.InsertOneAsync(session);
+            return await _mongoContext.Sessions.Find(n => n.Id == session.Id).FirstOrDefaultAsync();
+        }
+
+        /* Update */
+        public async Task<Session> AddQuestionsToSession(string id, List<string> questions)
+        {
+            List<ObjectId> questionIds = new List<ObjectId>();
+
+            foreach (string question in questions)
+            {
+                questionIds.Add(new ObjectId(question));
+            }
+
+            var sessionFilter = Builders<Session>.Filter;
+            var sessionQuery = sessionFilter.Eq(s => s.Id, new ObjectId(id));
+            Session sessionUpdate;
+            Session session = sessionUpdate = await _mongoContext.Sessions.Find(sessionQuery).FirstOrDefaultAsync();
+
+            var questionsFilter = Builders<Question>.Filter;
+            var questionsQuery = questionsFilter.In(q => q.Id, questionIds);
+            List<Question> questions1 = _mongoContext.Questions.Find(questionsQuery).ToList();
+
+            if (session.Questions == null)
+            {
+                sessionUpdate.Questions = new List<Question>();
+            }
+
+            foreach(Question q in questions1)
+            {
+                if (sessionUpdate.Questions.FindIndex(sq => sq.Id == q.Id) == -1)
+                {
+                    sessionUpdate.Questions.Add(q);
+                }
+                
+            }
+
+            UpdateResult result = await _mongoContext.Sessions.UpdateOneAsync(
+                sessionQuery,
+                Builders<Session>.Update.Set(s => s.Questions, sessionUpdate.Questions)
+            );
+
+            if (result.ModifiedCount > 0)
+            {
+                return sessionUpdate;
+            }
+            else
+            {
+                return session;
+            }
+        }
+
+        /* Session End */
 
         /* User Start */
         public async Task<NewUser> CreateUser(NewUser newUser)

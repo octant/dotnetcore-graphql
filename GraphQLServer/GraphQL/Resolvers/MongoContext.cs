@@ -71,5 +71,22 @@ namespace Plasma.Data
                 _database.CreateCollection("questions", options);
             }
         }
+
+        public IMongoCollection<Session> Sessions
+        {
+            get
+            {
+                return _database.GetCollection<Session>("sessions");
+            }
+            set
+            {
+                CreateCollectionOptions options = new CreateCollectionOptions<Session>()
+                {
+                    ValidationAction = DocumentValidationAction.Error,
+                    ValidationLevel = DocumentValidationLevel.Strict
+                };
+                _database.CreateCollection("sessions", options);
+            }
+        }
     }
 }

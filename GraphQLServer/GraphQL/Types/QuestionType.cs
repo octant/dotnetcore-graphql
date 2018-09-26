@@ -1,5 +1,4 @@
 ﻿using GraphQL.Types;
-using System.DirectoryServices;
 using Plasma.Data;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
