@@ -78,25 +78,7 @@ namespace Plasma
                     ),
                 resolve: context =>
                 {
-                    Dictionary<string, dynamic> update = context.GetArgument<Dictionary<string, dynamic>>("question");
-
-                    if (update.ContainsKey("alternatives"))
-                    {
-                        List<Alternative> alternatives = new List<Alternative>();
-                        foreach (Dictionary<string, dynamic> a in update["alternatives"])
-                        {
-                            alternatives.Add(new Alternative
-                            {
-                                Id = new ObjectId(a["id"]),
-                                Text = a["text"],
-                                Type = a["type"],
-                                Value = a["value"]
-                            });
-                        }
-                        update["alternatives"] = alternatives;
-                    }
-
-                    return data.UpdateQuestion(context.GetArgument<string>("id"), update).Result;
+                    return data.UpdateQuestion(context.GetArgument<string>("id"), context.GetArgument<Dictionary<string, dynamic>>("question"));
                 }
             );
 

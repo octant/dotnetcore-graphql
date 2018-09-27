@@ -122,6 +122,23 @@ namespace Plasma.Data
         /* Update */
         public async Task<Question> UpdateQuestion(string id, Dictionary<string, dynamic> update)
         {
+            //Dictionary<string, dynamic> update = context.GetArgument<Dictionary<string, dynamic>>("question");
+
+            if (update.ContainsKey("alternatives"))
+            {
+                List<Alternative> alternatives = new List<Alternative>();
+                foreach (Dictionary<string, dynamic> a in update["alternatives"])
+                {
+                    alternatives.Add(new Alternative
+                    {
+                        Id = a.ContainsKey("id") ? new ObjectId(a["id"]) : ObjectId.GenerateNewId(),
+                        Text = a["text"],
+                        Type = a["type"],
+                        Value = a["value"]
+                    });
+                }
+                update["alternatives"] = alternatives;
+            }
             var filter = Builders<Question>.Filter;
             var query = filter.Eq(m => m.Id, new ObjectId(id));
 
