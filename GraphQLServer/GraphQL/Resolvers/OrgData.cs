@@ -200,9 +200,24 @@ namespace Plasma.Data
         public async Task<Session> CreateSession(Session session)
         {
             session.Id = ObjectId.GenerateNewId();
-            
+            session.Status = "Pending";
+
             await _mongoContext.Sessions.InsertOneAsync(session);
             return await _mongoContext.Sessions.Find(n => n.Id == session.Id).FirstOrDefaultAsync();
+        }
+
+        /* Review */
+        public async Task<Session> GetSession(string id)
+        {
+            var filter = Builders<Session>.Filter;
+            var query = filter.Eq(q => q.Id, new ObjectId(id));
+
+            return await _mongoContext.Sessions.Find(query).FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<Session>> GetSessions()
+        {
+            return await _mongoContext.Sessions.Find(_ => true).ToListAsync();
         }
 
         /* Update */
@@ -253,6 +268,25 @@ namespace Plasma.Data
             }
         }
 
+        public async Task<Session> SetSessionStatus(string id, string status)
+        {
+            var filter = Builders<Session>.Filter;
+            var query = filter.Eq(s => s.Id, new ObjectId(id));
+            var update = Builders<Session>.Update.Set(s => s.Status, status);
+            await _mongoContext.Sessions.UpdateOneAsync(query, update);
+
+            return await _mongoContext.Sessions.Find(query).FirstOrDefaultAsync();
+        }
+
+        public async Task<Session> AskQuestion(string sessionId, string questionId)
+        {
+            var filter = Builders<Session>.Filter;
+            var query = filter.Eq(s => s.Id, new ObjectId(sessionId));
+            var update = Builders<Session>.Update.Set(s => s.CurrentQuestion, questionId);
+            await _mongoContext.Sessions.UpdateOneAsync(query, update);
+
+            return await _mongoContext.Sessions.Find(query).FirstOrDefaultAsync();
+        }
         /* Session End */
 
         /* User Start */

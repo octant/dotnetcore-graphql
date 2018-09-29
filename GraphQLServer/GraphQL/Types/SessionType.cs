@@ -13,9 +13,15 @@ namespace Plasma.Types
         {
             Name = "Session";
             Field<IdGraphType>("Id", resolve: context => context.Source.Id.ToString());
-            Field<BooleanGraphType>("Open", resolve: context => context.Source.Open);
-            Field<BooleanGraphType>("Closed", resolve: context => context.Source.Closed);
+            Field<StringGraphType>("Name", resolve: context => context.Source.Name.ToString());
+            Field<PublicUserDataType>("Leader", resolve: context => data.GetUser(context.Source.Leader.ToString()));
+            Field<StringGraphType>("Status", resolve: context => context.Source.Status.ToString());
             Field<ListGraphType<QuestionType>>("Questions", resolve: context => context.Source.Questions);
+            Field<QuestionType>("CurrentQuestion", resolve: context => {
+                return context.Source.CurrentQuestion == null
+                ? null
+                : data.GetQuestion(context.Source.CurrentQuestion.ToString());
+             });
         }
     }
 
@@ -25,9 +31,11 @@ namespace Plasma.Types
         {
             Name = "SessionInput";
             Field<IdGraphType>("Id");
-            Field<BooleanGraphType>("Open");
-            Field<BooleanGraphType>("Closed");
+            Field<StringGraphType>("Name");
+            Field<StringGraphType>("Leader");
+            Field<StringGraphType>("Status");
             Field<ListGraphType<QuestionInputType>>("Questions");
+            Field<StringGraphType>("CurrentQuestion");
         }
     }
 
@@ -36,14 +44,20 @@ namespace Plasma.Types
         [BsonId]
         public ObjectId Id { get; set; }
 
-        [BsonElement("open")]
-        public bool Open { get; set; }
+        [BsonElement("name")]
+        public string Name { get; set; }
 
-        [BsonElement("closed")]
-        public bool Closed { get; set; }
+        [BsonElement("leader")]
+        public string Leader { get; set; }
+
+        [BsonElement("status")]
+        public string Status { get; set; }
 
         [BsonElement("questions")]
         public List<Question> Questions { get; set; }
+
+        [BsonElement("currentQuestion")]
+        public string CurrentQuestion { get; set; }
     }
 }
 

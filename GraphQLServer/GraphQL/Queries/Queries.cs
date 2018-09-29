@@ -70,6 +70,23 @@ namespace Plasma
                 resolve: context => data.GetQuestion(context.GetArgument<string>("id"))
             );
 
+            Field<SessionType>(
+                "session",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>>
+                    {
+                        Name = "id",
+                        Description = "session id"
+                    }
+                ),
+                resolve: context => data.GetSession(context.GetArgument<string>("id"))
+            );
+
+            Field<ListGraphType<SessionType>>(
+                "sessions",
+                resolve: context => data.GetSessions()
+            );
+
             Field<ListGraphType<NewUserType>>(
                 "newUsers",
                 resolve: context => data.GetNewUsers()

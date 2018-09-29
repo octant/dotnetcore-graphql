@@ -120,6 +120,30 @@ namespace Plasma
                     return data.AddQuestionsToSession(context.GetArgument<string>("id"), context.GetArgument<List<string>>("questions"));
                 }
             );
+
+            Field<SessionType>(
+                "setSessionStatus",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "id", Description = "session id" },
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "status", Description = "session status" }
+                ),
+                resolve: context =>
+                {
+                    return data.SetSessionStatus(context.GetArgument<string>("id"), context.GetArgument<string>("status"));
+                }
+            );
+
+            Field<SessionType>(
+                "askQuestion",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "sessionId", Description = "session id" },
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "questionId", Description = "question id" }
+                ),
+                resolve: context =>
+                {
+                    return data.AskQuestion(context.GetArgument<string>("sessionId"), context.GetArgument<string>("questionId"));
+                }
+            );
         }
     }
 }
