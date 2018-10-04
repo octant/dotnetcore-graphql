@@ -88,5 +88,22 @@ namespace Plasma.Data
                 _database.CreateCollection("sessions", options);
             }
         }
+
+        public IMongoCollection<Answer> Answers
+        {
+            get
+            {
+                return _database.GetCollection<Answer>("answers");
+            }
+            set
+            {
+                CreateCollectionOptions options = new CreateCollectionOptions<Answer>()
+                {
+                    ValidationAction = DocumentValidationAction.Error,
+                    ValidationLevel = DocumentValidationLevel.Strict
+                };
+                _database.CreateCollection("answers", options);
+            }
+        }
     }
 }

@@ -53,6 +53,8 @@ namespace Plasma
             services.AddSingleton<AlternativeInputType>();
             services.AddSingleton<SessionType>();
             services.AddSingleton<SessionInputType>();
+            services.AddSingleton<AnswerType>();
+            services.AddSingleton<AnswerInputType>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

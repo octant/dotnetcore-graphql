@@ -194,6 +194,19 @@ namespace Plasma.Data
         }
         /* Question End */
 
+        /* Alternatives Start */
+        public async Task<Alternative> GetAlternative(string sessionId, string questionId, string alternativeId)
+        {
+            var filter = Builders<Session>.Filter;
+            var query = filter.Eq(s => s.Id, new ObjectId(sessionId));
+
+            Session session = await _mongoContext.Sessions.Find(query).FirstOrDefaultAsync();
+            Question question = session.Questions.Find(q => q.Id.ToString().Equals(questionId));
+            Alternative alternative = question.Alternatives.Find(a => a.Id.ToString().Equals(alternativeId));
+            return alternative;
+        }
+        /* Alternatives End */
+
         /* Session Start */
 
         /* Create */
@@ -365,5 +378,56 @@ namespace Plasma.Data
         }
 
         /* User End */
+
+        /* Answer Start */
+        public async Task<Answer> AnswerQuestion(Answer answer)
+        {
+            answer.Id = ObjectId.GenerateNewId();
+            await _mongoContext.Answers.InsertOneAsync(answer);
+            return await _mongoContext.Answers.Find(n => n.Id == answer.Id).FirstOrDefaultAsync();
+        }
+
+        public async Task<List<QuestionAnalysis>> AnalyzeSessionQuestion(string sessionId, string questionId)
+        {
+            var result = await _mongoContext.Answers.Aggregate()
+                .Match(a => a.SessionId == sessionId)
+                .Match(a => a.QuestionId == questionId)
+                .Group(new BsonDocument { { "_id", "$alternativeId" }, { "count", new BsonDocument("$sum", 1) } })
+                .ToListAsync();
+            List<QuestionAnalysis> analysis = new List<QuestionAnalysis>();
+            foreach (BsonDocument a in result)
+            {
+                analysis.Add(new QuestionAnalysis(a));
+            }
+            return analysis;
+        }
+
+        public async Task<List<string>> GetRespondents(string sessionId, string questionId)
+        {
+            var result = await _mongoContext.Answers.Aggregate()
+                .Match(a => a.SessionId == sessionId)
+                .Match(a => a.QuestionId == questionId)
+                .Project(new BsonDocument { { "user", "$userId" } })
+                .ToListAsync();
+            List<string> respondents = new List<string>();
+            foreach (BsonDocument r in result)
+            {
+                respondents.Add(r["user"].ToString());
+            }
+            return respondents;
+        }
+
+        public async Task<List<Answer>> GetAnswers()
+        {
+            return await _mongoContext.Answers.Find(_ => true).ToListAsync();
+        }
+
+        public async Task<List<Answer>> GetAnswers(string sessionId, string questionId)
+        {
+            var filter = Builders<Answer>.Filter;
+            var query = filter.Eq(a => a.SessionId, sessionId) & filter.Eq(a => a.QuestionId, questionId);
+            return await _mongoContext.Answers.Find(query).ToListAsync();
+        }
+        /* Answer End */
     }
 }

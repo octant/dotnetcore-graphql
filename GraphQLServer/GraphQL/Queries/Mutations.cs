@@ -82,17 +82,17 @@ namespace Plasma
                 }
             );
 
-            Field<QuestionType>(
-                "answerQuestion",
-                arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "id", Description = "question id" },
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "username", Description = "username" }
-                ),
-                resolve: context =>
-                {
-                    return data.AnswerQuestion(context.GetArgument<string>("id"), context.GetArgument<string>("username"));
-                }
-            );
+            //Field<QuestionType>(
+            //    "answerQuestion",
+            //    arguments: new QueryArguments(
+            //        new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "id", Description = "question id" },
+            //        new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "username", Description = "username" }
+            //    ),
+            //    resolve: context =>
+            //    {
+            //        return data.AnswerQuestion(context.GetArgument<string>("id"), context.GetArgument<string>("username"));
+            //    }
+            //);
 
             /* Sessions */
 
@@ -142,6 +142,20 @@ namespace Plasma
                 resolve: context =>
                 {
                     return data.AskQuestion(context.GetArgument<string>("sessionId"), context.GetArgument<string>("questionId"));
+                }
+            );
+
+            /* Answers */
+
+            /* Create */
+            Field<AnswerType>(
+                "answerQuestion",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<AnswerInputType>> { Name = "answer", Description = "answer" }
+                ),
+                resolve: context =>
+                {
+                    return data.AnswerQuestion(context.GetArgument<Answer>("answer"));
                 }
             );
         }

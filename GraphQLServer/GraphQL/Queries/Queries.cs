@@ -51,11 +51,33 @@ namespace Plasma
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<StringGraphType>>
                     {
+                        Name = "sessionId",
+                        Description = "session id"
+                    },
+                    new QueryArgument<NonNullGraphType<StringGraphType>>
+                    {
                         Name = "questionId",
                         Description = "question id"
                     }
                 ),
-                resolve: context => data.AnalyzeQuestion(context.GetArgument<string>("questionId"))
+                resolve: context => data.AnalyzeSessionQuestion(context.GetArgument<string>("sessionId"), context.GetArgument<string>("questionId"))
+            );
+
+            Field<ListGraphType<StringGraphType>>(
+                "getRespondents",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>>
+                    {
+                        Name = "sessionId",
+                        Description = "session id"
+                    },
+                    new QueryArgument<NonNullGraphType<StringGraphType>>
+                    {
+                        Name = "questionId",
+                        Description = "question id"
+                    }
+                ),
+                resolve: context => data.GetRespondents(context.GetArgument<string>("sessionId"), context.GetArgument<string>("questionId"))
             );
 
             Field<QuestionType>(
@@ -85,6 +107,28 @@ namespace Plasma
             Field<ListGraphType<SessionType>>(
                 "sessions",
                 resolve: context => data.GetSessions()
+            );
+
+            Field<ListGraphType<AnswerType>>(
+                "answers",
+                resolve: context => data.GetAnswers()
+            );
+
+            Field<ListGraphType<AnswerType>>(
+                "answersForSessionQuestion",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>>
+                    {
+                        Name = "sessionId",
+                        Description = "session id"
+                    },
+                    new QueryArgument<NonNullGraphType<StringGraphType>>
+                    {
+                        Name = "questionId",
+                        Description = "question id"
+                    }
+                ),
+                resolve: context => data.GetAnswers(context.GetArgument<string>("sessionId"), context.GetArgument<string>("questionId"))
             );
 
             Field<ListGraphType<NewUserType>>(
