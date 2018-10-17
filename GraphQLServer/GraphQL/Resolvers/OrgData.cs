@@ -48,11 +48,7 @@ namespace Plasma.Data
         {
             DirectorySearcher ds = createDirectorySearcher();
             ds.Filter = $"(sAMAccountName={userName})";
-            DirectoryEntry user = ds.FindOne().GetDirectoryEntry();
-            Debug.WriteLine("--------------Asking for " + ds.Filter);
-
-            Debug.WriteLine("--------------Asking for " + user.Properties["sAMAccountName"].Value);
-            return user;
+            return ds.FindOne().GetDirectoryEntry();
         }
 
         public ADUser GetUser(string userName)
