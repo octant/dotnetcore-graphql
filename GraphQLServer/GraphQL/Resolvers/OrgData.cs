@@ -9,17 +9,17 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using System.Text.RegularExpressions;
 using System.Security.Principal;
+using System.Diagnostics;
 
 namespace Plasma.Data
 {
     public class OrgData
     {
-        private readonly DirectorySearcher ds;
         private readonly MongoContext _mongoContext;
 
-        public OrgData(IOptions<MongoSettings> settings, IConfiguration configuration)
+        public DirectorySearcher createDirectorySearcher ()
         {
-            ds = new DirectorySearcher(configuration.GetSection("Org:ldap").Value);
+            DirectorySearcher ds = new DirectorySearcher("LDAP://DC=APH,DC=ON,DC=COM");
             string[] userProperties = new string[] {
                 "sAMAccountName",
                 "GivenName",
@@ -36,24 +36,35 @@ namespace Plasma.Data
                 "Employees"
             };
             ds.PropertiesToLoad.AddRange(userProperties);
+            return ds;
+        }
 
+        public OrgData(IOptions<MongoSettings> settings)
+        {
             _mongoContext = new MongoContext(settings);
         }
 
         public DirectoryEntry GetDirectoryEntry(string userName)
         {
+            DirectorySearcher ds = createDirectorySearcher();
             ds.Filter = $"(sAMAccountName={userName})";
-            return ds.FindOne().GetDirectoryEntry();
+            DirectoryEntry user = ds.FindOne().GetDirectoryEntry();
+            Debug.WriteLine("--------------Asking for " + ds.Filter);
+
+            Debug.WriteLine("--------------Asking for " + user.Properties["sAMAccountName"].Value);
+            return user;
         }
 
         public ADUser GetUser(string userName)
         {
+            DirectorySearcher ds = createDirectorySearcher();
             ds.Filter = $"(sAMAccountName={userName})";
             return new ADUser(ds.FindOne().GetDirectoryEntry());
         }
 
         public List<ADUser> GetEmployees(object distinguishedName)
         {
+            DirectorySearcher ds = createDirectorySearcher();
             ds.Filter = $"(&(Manager={distinguishedName})(!(userAccountControl:1.2.840.113556.1.4.803:=2)))";
             List<ADUser> employees = new List<ADUser>();
 
@@ -67,6 +78,7 @@ namespace Plasma.Data
 
         public ADUser GetManager(object distinguishedName)
         {
+            DirectorySearcher ds = createDirectorySearcher();
             if (distinguishedName == null)
             {
                 return new ADUser();
@@ -110,6 +122,21 @@ namespace Plasma.Data
         public async Task<IEnumerable<Question>> GetQuestions()
         {
             return await _mongoContext.Questions.Find(_ => true).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Question>> GetQuestions(List<string> questions)
+        {
+            List<ObjectId> questionIds = new List<ObjectId>();
+
+            foreach (string id in questions)
+            {
+                questionIds.Add(new ObjectId(id));
+            }
+ 
+            var filter = Builders<Question>.Filter;
+            var query = filter.In(q => q.Id, questionIds);
+
+            return await _mongoContext.Questions.Find(query).ToListAsync();
         }
 
         public async Task<Question> GetQuestion(string id)
@@ -195,13 +222,12 @@ namespace Plasma.Data
         /* Question End */
 
         /* Alternatives Start */
-        public async Task<Alternative> GetAlternative(string sessionId, string questionId, string alternativeId)
+        public async Task<Alternative> GetAlternative(string questionId, string alternativeId)
         {
-            var filter = Builders<Session>.Filter;
-            var query = filter.Eq(s => s.Id, new ObjectId(sessionId));
+            var filter = Builders<Question>.Filter;
+            var query = filter.Eq(q => q.Id, new ObjectId(questionId));
 
-            Session session = await _mongoContext.Sessions.Find(query).FirstOrDefaultAsync();
-            Question question = session.Questions.Find(q => q.Id.ToString().Equals(questionId));
+            Question question = await _mongoContext.Questions.Find(query).FirstOrDefaultAsync();
             Alternative alternative = question.Alternatives.Find(a => a.Id.ToString().Equals(alternativeId));
             return alternative;
         }
@@ -223,7 +249,7 @@ namespace Plasma.Data
         public async Task<Session> GetSession(string id)
         {
             var filter = Builders<Session>.Filter;
-            var query = filter.Eq(q => q.Id, new ObjectId(id));
+            var query = filter.Eq(s => s.Id, new ObjectId(id));
 
             return await _mongoContext.Sessions.Find(query).FirstOrDefaultAsync();
         }
@@ -236,49 +262,56 @@ namespace Plasma.Data
         /* Update */
         public async Task<Session> AddQuestionsToSession(string id, List<string> questions)
         {
-            List<ObjectId> questionIds = new List<ObjectId>();
+            var filter = Builders<Session>.Filter;
+            var query = filter.Eq(s => s.Id, new ObjectId(id));
+            var update = Builders<Session>.Update.Set(s => s.Questions, questions);
 
-            foreach (string question in questions)
-            {
-                questionIds.Add(new ObjectId(question));
-            }
+            await _mongoContext.Sessions.UpdateOneAsync(query, update);
 
-            var sessionFilter = Builders<Session>.Filter;
-            var sessionQuery = sessionFilter.Eq(s => s.Id, new ObjectId(id));
-            Session sessionUpdate;
-            Session session = sessionUpdate = await _mongoContext.Sessions.Find(sessionQuery).FirstOrDefaultAsync();
+            return await _mongoContext.Sessions.Find(query).FirstOrDefaultAsync();
+            //List<ObjectId> questionIds = new List<ObjectId>();
 
-            var questionsFilter = Builders<Question>.Filter;
-            var questionsQuery = questionsFilter.In(q => q.Id, questionIds);
-            List<Question> questions1 = _mongoContext.Questions.Find(questionsQuery).ToList();
+            //foreach (string question in questions)
+            //{
+            //    questionIds.Add(new ObjectId(question));
+            //}
 
-            if (session.Questions == null)
-            {
-                sessionUpdate.Questions = new List<Question>();
-            }
+            //var sessionFilter = Builders<Session>.Filter;
+            //var sessionQuery = sessionFilter.Eq(s => s.Id, new ObjectId(id));
+            //Session sessionUpdate;
+            //Session session = sessionUpdate = await _mongoContext.Sessions.Find(sessionQuery).FirstOrDefaultAsync();
 
-            foreach(Question q in questions1)
-            {
-                if (sessionUpdate.Questions.FindIndex(sq => sq.Id == q.Id) == -1)
-                {
-                    sessionUpdate.Questions.Add(q);
-                }
-                
-            }
+            //var questionsFilter = Builders<Question>.Filter;
+            //var questionsQuery = questionsFilter.In(q => q.Id, questionIds);
+            //List<Question> questions1 = _mongoContext.Questions.Find(questionsQuery).ToList();
 
-            UpdateResult result = await _mongoContext.Sessions.UpdateOneAsync(
-                sessionQuery,
-                Builders<Session>.Update.Set(s => s.Questions, sessionUpdate.Questions)
-            );
+            //if (session.Questions == null)
+            //{
+            //    sessionUpdate.Questions = new List<Question>();
+            //}
 
-            if (result.ModifiedCount > 0)
-            {
-                return sessionUpdate;
-            }
-            else
-            {
-                return session;
-            }
+            //foreach(Question q in questions1)
+            //{
+            //    if (sessionUpdate.Questions.FindIndex(sq => sq.Id == q.Id) == -1)
+            //    {
+            //        sessionUpdate.Questions.Add(q);
+            //    }
+
+            //}
+
+            //UpdateResult result = await _mongoContext.Sessions.UpdateOneAsync(
+            //    sessionQuery,
+            //    Builders<Session>.Update.Set(s => s.Questions, sessionUpdate.Questions)
+            //);
+
+            //if (result.ModifiedCount > 0)
+            //{
+            //    return sessionUpdate;
+            //}
+            //else
+            //{
+            //    return session;
+            //}
         }
 
         public async Task<Session> SetSessionStatus(string id, string status)
@@ -341,7 +374,7 @@ namespace Plasma.Data
 
         public DirectoryEntry UpdateADUser(WindowsIdentity identity, string userName, Dictionary<string, dynamic> update)
         {
-
+            DirectorySearcher ds = createDirectorySearcher();
             ds.Filter = $"(sAMAccountName={userName})";
             DirectoryEntry user = ds.FindOne().GetDirectoryEntry();
 
@@ -360,6 +393,7 @@ namespace Plasma.Data
 
         public List<ADUser> GetAPHUsers()
         {
+            DirectorySearcher ds = createDirectorySearcher();
             Dictionary<string, string> groupDNs = new Dictionary<string, string>();
             groupDNs.Add("IT_Department", "CN=IT_Department,OU=Secure Groups,OU=Willow Ave,DC=ahu,DC=on,DC=ca");
 
@@ -392,12 +426,17 @@ namespace Plasma.Data
             var result = await _mongoContext.Answers.Aggregate()
                 .Match(a => a.SessionId == sessionId)
                 .Match(a => a.QuestionId == questionId)
-                .Group(new BsonDocument { { "_id", "$alternativeId" }, { "count", new BsonDocument("$sum", 1) } })
+                .Group(new BsonDocument { { "_id", new BsonDocument { { "sessionId", "$sessionId" }, { "questionId", "$questionId" }, { "alternativeId", "$alternativeId" } } }, { "count", new BsonDocument("$sum", 1) } })
                 .ToListAsync();
             List<QuestionAnalysis> analysis = new List<QuestionAnalysis>();
             foreach (BsonDocument a in result)
             {
-                analysis.Add(new QuestionAnalysis(a));
+                QuestionAnalysis qa = new QuestionAnalysis();
+                qa.SessionId = a["_id"]["sessionId"].ToString();
+                qa.QuestionId = a["_id"]["questionId"].ToString();
+                qa.AlternativeId = a["_id"]["alternativeId"].ToString();
+                qa.Count = a["count"].ToInt32();
+                analysis.Add(qa);
             }
             return analysis;
         }
