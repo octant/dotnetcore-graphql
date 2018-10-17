@@ -9,7 +9,6 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using System.Text.RegularExpressions;
 using System.Security.Principal;
-using System.Diagnostics;
 
 namespace Plasma.Data
 {
