@@ -7,6 +7,7 @@ namespace Plasma.Types
 {
     public class ADUser
     {
+        public string Id { get; set; }
         public string SAMAccountName { get; set; }
         public string Mail { get; set; }
         public string GivenName { get; set; }
@@ -23,6 +24,7 @@ namespace Plasma.Types
 
         public ADUser(DirectoryEntry user)
         {
+            Id = user.Properties["sAMAccountName"].Value.ToString();
             SAMAccountName = user.Properties["sAMAccountName"].Value.ToString();
             Mail = user.Properties["Mail"].Value.ToString();
             GivenName = user.Properties["GivenName"].Value.ToString();
@@ -45,6 +47,7 @@ namespace Plasma.Types
             IEnumerator PhysicalDeliveryOfficeNameEnum = user.Properties["physicalDeliveryOfficeName"].GetEnumerator();
 
             if (SAMAccountNameEnum.MoveNext())
+                Id = SAMAccountNameEnum.Current.ToString();
                 SAMAccountName = SAMAccountNameEnum.Current.ToString();
             if (MailEnum.MoveNext())
                 Mail = MailEnum.Current.ToString();
@@ -68,6 +71,7 @@ namespace Plasma.Types
         public PublicUserDataType()
         {
             Name = "PublicUserData";
+            Field<IdGraphType>("Id", resolve: context => context.Source.SAMAccountName);
             Field<StringGraphType>("sAMAccountName", resolve: context => context.Source.SAMAccountName);
             Field<StringGraphType>("Mail", resolve: context => context.Source.Mail);
             Field<StringGraphType>("GivenName", resolve: context => context.Source.GivenName);

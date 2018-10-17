@@ -9,10 +9,11 @@ namespace Plasma.Types
         public ADUserType(OrgData data)
         {
             Name = "ADUser";
-            Field<IdGraphType>("sAMAccountName", resolve: context => context.Source.Properties["sAMAccountName"].Value);
+            Field<IdGraphType>("id", resolve: context => context.Source.Properties["sAMAccountName"].Value);
+            Field<StringGraphType>("sAMAccountName", resolve: context => context.Source.Properties["sAMAccountName"].Value);
             Field<StringGraphType>("GivenName", resolve: context => context.Source.Properties["GivenName"].Value);
             Field<StringGraphType>("SN", resolve: context => context.Source.Properties["SN"].Value);
-            Field<StringGraphType>("DisplayName", resolve: context => context.Source.Properties["DisplayName"].Value);
+            Field<StringGraphType>("DisplayName", resolve: context => "adu-" + context.Source.Properties["DisplayName"].Value);
             Field<StringGraphType>("Description", resolve: context => context.Source.Properties["Description"].Value);
             Field<StringGraphType>("Department", resolve: context => context.Source.Properties["Department"].Value);
             Field<StringGraphType>("Mail", resolve: context => context.Source.Properties["Mail"].Value);
